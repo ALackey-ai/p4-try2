@@ -1,68 +1,98 @@
-/*
-*TODO: You must replace this header file with what is posted on the class website!
-*/
+
+
 #ifndef LAB_H
 #define LAB_H
-#include <stdlib.h>
-#include <stdbool.h>
 #include <lab_export.h>
-
-#define MAX_VERSION_STRING 10
+#include <pthread.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-  /**
-   * @brief Entry point for the main function. If your project requires a main
-   * then you will write your code in the myMain function. If your project
-   * does NOT require a main (i.e. you are writing a library) then this
-   * function will be empty.
-   *
-   * @param argc The argument count
-   * @param argv The argument array
-   * @return The exit code
-   */
-  LAB_EXPORT int myMain(int argc, char **argv);
+// The threshold that we will use to switch to insertion sort, make sure that
+// you use test arrays bigger than 5 so you are testing the merge sort
+#define INSERTION_SORT_THRESHOLD 5
+#define MAX_THREADS 32
+        /**
+         * @brief Sorts an array of ints into ascending order using the constant
+         * INSERTION_SORT_THRESHOLD internally
+         *
+         * @param A A pointer to the start of the array
+         * @param p The starting index
+         * @param r The ending index
+         */
+        LAB_EXPORT void mergesort_s(int *A, int p, int r);
 
-  /**
-   * @brief Returns a string containing the version of the library. This string
-   * has been allocated using malloc and must be freed by the caller. The
-   * version of the library is generated using the cmake version.
-   *
-   * @return char* The version string
-   */
-  LAB_EXPORT char *fooVersion(void);
+        /**
+         * @brief Sorts an array of ints into ascending order
+         *
+         * @param A A pointer to the start of the array
+         * @param p The starting index
+         * @param r The ending index
+         * @param min The min size that we will sort until we switch to insertion sort
+         */
+        LAB_EXPORT void mergesort_sm(int *A, int p, int r, int min);
 
-  /**
-   * @brief Example function that adds two numbers together.
-   *
-   * @param a The first number
-   * @param b The second number
-   * @return The sum of the two numbers
-   */
-  LAB_EXPORT int add(int a, int b);
+        /**
+         * @brief Merge two sorted sequences A[p..q] and A[q+1..r] and place merged
+         *              output back in array A. Uses extra space proportional to
+         *              A[p..r].
+         *
+         * @param A The array to merge into
+         * @param p The starting index of the first half
+         * @param q The middle
+         * @param r The ending index of the second half
+         */
+        LAB_EXPORT void merge_s(int A[], int p, int q, int r);
 
-  /**
-   * @brief Function that leaks some data!
-   *
-   * @param a some number
-   * @return a pointer to some memory
-   */
-  LAB_EXPORT int *leak(int a);
+        /**
+         * @brief Sorts an array of ints into ascending order using multiple
+         * threads
+         *
+         * @param A A pointer to the start of the array
+         * @param n The size of the array
+         * @param num_threads The number of threads to use.
+         * @param min The min size that we will sort until we switch to
+         * insertion sort. passing 0 will default to INSERTION_SORT_THRESHOLD
+         */
+        LAB_EXPORT void mergesort_mt(int *A, int n, int num_threads, int min);
 
-  /**
-   * @brief This function causes a segfault
-   *
-   */
-  LAB_EXPORT int segfault(void);
+        /*
+         * @brief retuns the current time as milliseconds
+         * @return the number of milliseconds
+         */
+        LAB_EXPORT double getMilliSeconds();
 
-  /**
-   * @brief This function causes an array out of bounds error
-   *
-   */
-  LAB_EXPORT void outOfBounds(void);
+        /**
+         * @brief Represents a chunk of the array to be sorted by a thread
+         *
+         */
+        struct parallel_args
+        {
+                int *A;
+                int start;
+                int end;
+                int min;
+                pthread_t tid;
+        };
+
+        /**
+         * @brief The function that is called by each thread to sort their chunk
+         *
+         * @param args see struct parallel_args
+         * @return void* always NULL
+         */
+        static void *parallel_mergesort(void *args);
+
+        /**
+         * @brief Entry point for the main function
+         *
+         * @param argc The argument count
+         * @param argv The argument array
+         * @return The exit code
+         */
+        LAB_EXPORT int myMain(int argc, char **argv);
 
 #ifdef __cplusplus
 } // extern "C"
