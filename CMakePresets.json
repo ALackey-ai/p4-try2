@@ -1,0 +1,242 @@
+{
+    "version": 6,
+    "configurePresets": [
+        {
+            "name": "vcpkg",
+            "description": "Configure with vcpkg",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": {
+                    "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                    "type": "FILEPATH"
+                }
+            }
+        },
+        {
+            "name": "base",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "installDir": "${sourceDir}/out/install/${presetName}"
+        },
+        {
+            "name": "x64-Debug",
+            "description": "Debug Configuration",
+            "inherits": [
+                "base"
+            ],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            },
+            "condition": {
+                "type": "notEquals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "x64-Debug-win32",
+            "description": "Debug Configuration",
+            "inherits": [
+                "base",
+                "vcpkg"
+            ],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "x64-Release",
+            "description": "Release Configuration",
+            "inherits": [
+                "base"
+            ],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            },
+            "condition": {
+                "type": "notEquals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "x64-Release-win32",
+            "description": "Release Configuration",
+            "inherits": [
+                "base",
+                "vcpkg"
+            ],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "x64-ASan",
+            "description": "Debug Configuration With Address Sanitizer",
+            "inherits": [
+                "base"
+            ],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "SANITIZE_ADDRESS": "ON"
+            },
+            "condition": {
+                "type": "notEquals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "x64-ASan-json",
+            "description": "Debug Configuration With Address Sanitizer",
+            "inherits": [
+                "base"
+            ],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "SANITIZE_ADDRESS": "ON",
+                "CMAKE_CXX_FLAGS_INIT": "-fdiagnostics-format=json",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            },
+            "condition": {
+                "type": "notEquals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "x64-Coverage",
+            "description": "Code Coverage with lcov",
+            "inherits": [
+                "base"
+            ],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "COVERAGE": "ON"
+            },
+            "condition": {
+                "type": "notEquals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "x64-Debug",
+            "description": "Build Debug Configuration",
+            "configurePreset": "x64-Debug"
+        },
+        {
+            "name": "x64-Debug-win32",
+            "description": "Build Debug Configuration",
+            "configurePreset": "x64-Debug-win32"
+        },
+        {
+            "name": "x64-Release",
+            "description": "Build Release Configuration",
+            "configurePreset": "x64-Release"
+        },
+        {
+            "name": "x64-Release-win32",
+            "description": "Build Release Configuration",
+            "configurePreset": "x64-Release-win32"
+        },
+        {
+            "name": "x64-ASan",
+            "description": "Build Configuration With Address Sanitizer",
+            "configurePreset": "x64-ASan"
+        },
+        {
+            "name": "x64-Coverage",
+            "description": "Build Configuration With Coverage",
+            "configurePreset": "x64-Coverage",
+            "targets": [
+                "coverage"
+            ]
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "x64-ASan",
+            "configurePreset": "x64-ASan",
+            "output": {
+                "outputOnFailure": true
+            },
+            "execution": {
+                "noTestsAction": "error",
+                "stopOnFailure": true
+            },
+            "environment": {
+                "ASAN_OPTIONS": "detect_leaks=1"
+            }
+        },
+        {
+            "name": "x64-Debug",
+            "configurePreset": "x64-Debug"
+        },
+        {
+            "name": "x64-Release",
+            "configurePreset": "x64-Release"
+        },
+        {
+            "name": "x64-Debug-win32",
+            "configurePreset": "x64-Debug-win32"
+        },
+        {
+            "name": "x64-Release-win32",
+            "configurePreset": "x64-Release-win32"
+        }
+    ],
+    "packagePresets": [
+        {
+            "name": "x64-Release",
+            "configurePreset": "x64-Release",
+            "generators": [
+                "ZIP"
+            ]
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "coverage",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "x64-Coverage"
+                },
+                {
+                    "type": "build",
+                    "name": "x64-Coverage"
+                }
+            ]
+        },
+        {
+            "name": "test",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "x64-ASan"
+                },
+                {
+                    "type": "build",
+                    "name": "x64-ASan"
+                },
+                {
+                    "type": "test",
+                    "name": "x64-ASan"
+                }
+            ]
+        }
+    ]
+}

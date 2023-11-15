@@ -1,0 +1,32 @@
+name: Code Coverage (lcov)
+
+on:
+  workflow_call:
+
+jobs:
+    coverage_report:
+        name: Generate coverage report
+        runs-on: ubuntu-latest
+        steps:
+        - uses: actions/checkout@v3
+
+        - name: Setup LCOV
+          uses: hrishikesh-kadam/setup-lcov@v1
+
+        - name: Set VCPKG_ROOT env variable
+          shell: bash
+          run: |
+            echo "VCPKG_ROOT=$(echo $VCPKG_INSTALLATION_ROOT)" >> "$GITHUB_ENV"
+
+        - name: Run Coverage
+          run: cmake --workflow  --preset coverage
+
+        - name: Report code coverage
+          uses: zgosalvez/github-actions-report-lcov@v3
+          with:
+            coverage-files: out/build/x64-Coverage/coverage.info
+            minimum-coverage: 20
+            artifact-name: code-coverage-report
+            github-token: ${{ secrets.GITHUB_TOKEN }}
+            update-comment: true
+            working-directory: src

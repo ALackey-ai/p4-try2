@@ -1,0 +1,18 @@
+{
+    "files.associations": {
+        "libshared_and_static_export.h": "c",
+        "lab.h": "c",
+        "unity.h": "c"
+    },
+    "cSpell.words": [
+        "ASAN",
+        "buildsystems",
+        "lcov",
+        "LIBSHARED",
+        "ntests",
+        "pthreads",
+        "srunner",
+        "tcase",
+        "vcpkg"
+    ],
+}

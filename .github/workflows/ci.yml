@@ -1,0 +1,27 @@
+## Configure, build, and test your code on Linux
+name: CI - Student Grader
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    if: github.repository != 'shanep/cpp-project-template'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest]
+        build_type: [x64-Release]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Configure
+      run: cmake --preset ${{ matrix.build_type }}
+    - name: Build
+      run: cmake --build --preset ${{ matrix.build_type }}
+    - name: Test
+      run: ctest --preset ${{ matrix.build_type }}

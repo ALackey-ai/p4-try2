@@ -1,0 +1,7 @@
+{
+    "dependencies": [
+      "readline",
+      "gtest",
+      "pkgconf"
+    ]
+}

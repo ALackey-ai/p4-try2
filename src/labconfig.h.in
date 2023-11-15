@@ -1,0 +1,4 @@
+/*the configured options and settings*/ 
+/*Do not modify this file*/
+#define lab_VERSION_MAJOR @lab_VERSION_MAJOR@
+#define lab_VERSION_MINOR @lab_VERSION_MINOR@

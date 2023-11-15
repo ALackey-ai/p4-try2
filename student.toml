@@ -1,0 +1,5 @@
+rubric = "https://shanepanter.com/cs452/grading-rubric.html"
+
+[student]
+name = "johnny mnemonic"
+email = "johnny@omni.corp"
