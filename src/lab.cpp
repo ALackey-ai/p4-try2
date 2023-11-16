@@ -123,82 +123,73 @@ static void *parallel_mergesort(void *args)
 
 void mergesort_mt(int *A, int n, int num_threads, int min)
 {
-
-    //figure how many threads I need to use
     //check if the number of threads to be used is 0
         //if so just use insertion sort
     if (num_threads <= 0) {
         //use insertion sort
+        mergesort_sm(A, 0, n, min);
+        return;
     }
 
 
     //calculate the size of each "chunk" of the array that each thread is responsible for sorting
     int chunk_size = n / num_threads;
+    int extra = n - ( chunk_size * num_threads );
 
 
     //determine if the chunk size is less than the insertion sort threshold
         //if so just use insertion sort
     if (chunk_size <= INSERTION_SORT_THRESHOLD) {
         //use insertions sort
+        mergesort_sm(A, 0, n, min);
+        return;
     }
 
 
     //else use threads to sort each chunk
-    
-
-    struct parallel_args *arg1 = (struct parallel_args *)args;
-    int mid = n / 2;
-    arg1->A = A;
-    arg1->start = 0;
-    arg1->end = n; 
-    arg1->min = min;
-  
-    //check if n is too low to split and use merge sort
-    if((n <= INSERTION_SORT_THRESHOLD) || (n <= min)) {
-        //switch to insertion sort
-        mergesort_sm
-        insertion_sort(A[], arg1->start, arg->end); //I need to setup the arg struct properly before this will work
+    //create thread/chunk array and fill with structs of chunks
+    struct parallel_args chunk1;
+    chunk1.A = A;
+    chunk1.min = min;
+    chunk1.start = 0;
+    chunk1.end = (chunk_size + extra - 1);
+    struct parallel_args chunks[MAX_THREADS];
+    chunks[0] = chunk1;
+    for (int i = 1; i < num_threads; i++){
+        struct parallel_args arg;
+        arg.A = A;
+        arg.min = min;
+        arg.start = (chunk_size * i) + extra;
+        arg.end = arg.start + chunk_size - 1;
+        chunks[i] = arg;
     }
 
-  //step 1: generate all new start and ends and A pointers(look at parallel mergesort above)
-  //do I need two of them?
-    struct parallel_args *arg2 = (struct parallel_args *)args;
-    //create an array of threads for later?
-    int mid = n / 2;
-    arg1->end = mid;
-    
-    arg2->A = A;
-    arg2->start = mid+1;
-    arg2->end = n; 
-    arg2->min = min;
+    //step 2: fire off num_threads
+    for (int i = 0; i < num_threads; i++){
+        pthread_t p;
+        pthread_create(&p, NULL, parallel_mergesort, &chunks[i]);
+        chunks[i].tid = p; //should this line be before or after pthread_create?
+    }
 
-  //step 2: fire off num_threas
-    pthread_t p1, p2; //how to change to numthreads, maybe an array?
-    int rc;
-    pthread_create(&p1, NULL, mythread, "A");
-    pthread_create(&p2, NULL, mythread, "B");
-    arg1->tid = &p1; //no idea if this is right
-    arg2->tid = &p2;
-
-    
-    //what sort do I call? myself?
-    //do I split it for each thread here? split and then call merge sort?
-    mergesort_sm(arg1->A, arg1->start, arg1->end, arg1->min);
-    mergesort_sm(arg2->A, arg2->start, arg2->end, arg2->min);
-
-
-  //step 3: wait for all child threads to complete (Dracula theory)
+    //step 3: wait for all child threads to complete (Dracula theory)
     //should have an array of threads
     //for thread in threads
         //pthread_wait(thread)
     //done
-
-    pthread_join(p1, NULL); //pthread join after the pthread wait? idk if this makes sense
-    pthread_join(p2, NULL);
-  //step 4: final merge of returned sorted stuff
-  //merge_s (single threaded version)
-    merge_s(A, 0, mid, n);
-
+    
+    for (int i = 0; i< num_threads; i++){
+        pthread_join(chunks[i].tid, NULL); 
+    }
+    //q is the middle, aka the last element(end) of the first of the two
+    //do this "combine" for the first two thread's arrays, then use that resulting "combined" 
+    //to combine with the next, and so on.
+    //make sure to update the "ends" so that that I can continue to use them correctly
+    merge_s(A, 0, );
+    
+    //step 4: final merge of returned sorted stuff
+    //merge_s (single threaded version)
+    mergesort_sm(A, 0, n, 0);
+    return;
 
 }
 
