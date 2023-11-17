@@ -176,21 +176,26 @@ void mergesort_mt(int *A, int n, int num_threads, int min)
     //for thread in threads
         //pthread_wait(thread)
     //done
-    
-    for (int i = 0; i< num_threads; i++){
+    for (int i = 0; i < num_threads; i++){
         pthread_join(chunks[i].tid, NULL); 
     }
+
+
     //q is the middle, aka the last element(end) of the first of the two
     //do this "combine" for the first two thread's arrays, then use that resulting "combined" 
     //to combine with the next, and so on.
     //make sure to update the "ends" so that that I can continue to use them correctly
-    merge_s(A, 0, );
+    for (int i = 1; i < num_threads; i++){
+        merge_s(A, chunks[i-1].start, chunks[i-1].end, chunks[i].end);
+        chunks[i].start = chunks[i-1].start;
+    }
+    
+    
     
     //step 4: final merge of returned sorted stuff
     //merge_s (single threaded version)
     mergesort_sm(A, 0, n, 0);
     return;
-
 }
 
 using namespace std;
